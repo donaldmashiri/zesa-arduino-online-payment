@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<section id="pricing" class="pricing">
+    <div class="container" data-aos="fade-up">
+        <div class="row gy-4">
+            <div class="col-2"></div>
+            <div class="col-8">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% if 'error' in messages[0] or 'errors' in messages[0] %}
+                            <div class="alert alert-danger" role="alert">
+                                {{messages[0]}}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success" role="alert">
+                                {{messages[0]}}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endwith %}  
+            </div>
+            <div class="col-2"></div>
+            <div class="col-lg-2">
+            </div>
+            <div class="col-lg-8" data-aos="zoom-in" data-aos-delay="400">
+                <div class="pricing-item featured">
+                    <div class="pricing-header">
+                        <h4 class="text-warning fw-bolder">{{meter.num}}</h4>
+                        <p class="float-end fw-bold text-danger">Units : {{meter.units}}</p> <br>
+                    </div>
+                    <div class="tab-content">
+                        <div class="row gy-4">
+                            <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+                                <div class="card">
+                                    <div class="card-header"><h6 style="color:purple" class="text">Usage</h6></div>
+                                    <div class="card-body">
+                                    <div class="container mt-5">
+                                      <h1>Electricity Usage Monitor</h1>
+                                      <canvas id="usageChart" width="400" height="200"></canvas>
+                                    </div>
+            
+                                    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.2/dist/chart.min.js"></script>
+              
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  // Sample data for demonstration
+                  var usageData = {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                      label: 'Electricity Usage',
+                      data: [500, 650, 800, 700, 900, 750],
+                      backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                      borderColor: 'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                    }]
+                  };
+            
+                  // Chart configuration
+                  var chartConfig = {
+                    type: 'bar',
+                    data: usageData,
+                    options: {
+                      responsive: true,
+                      scales: {
+                        y: {
+                          beginAtZero: true
+                        }
+                      }
+                    }
+                  };
+            
+                  // Create and render the chart
+                  var usageChart = new Chart(document.getElementById('usageChart'), chartConfig);
+                });
+              </script>
+                                    </div>
+                                  
+                                  </div>
+                                  
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

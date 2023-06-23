@@ -7,13 +7,15 @@ from models import *
 import random
 import serial
 from apscheduler.schedulers.background import BackgroundScheduler
+import vonage
+
 
 
 # You can change this to any folder on your system
 ALLOWED_EXTENSIONS = {'jpeg'}
 
-serial_port = 'COM5'
-arduino = serial.Serial(serial_port, 9600, timeout=1)
+# serial_port = 'COM5'
+# arduino = serial.Serial(serial_port, 9600, timeout=1)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ProfessorSecret'
@@ -34,6 +36,7 @@ with app.app_context():
 
 @login_manager.user_loader
 def load_user(user_id):
+    
     return User.query.filter_by(id=user_id).first()
 
 def allowed_file(filename):
@@ -45,6 +48,14 @@ def allowed_file(filename):
 def index():
     meter = Meter.query.filter_by(user_id=session['userid']).first()
     return render_template('index.html', meter=meter)
+
+
+
+@app.route('/usage', methods=['GET', 'POST'])
+@login_required
+def usage():
+    meter = Meter.query.filter_by(user_id=session['userid']).first()
+    return render_template('usage.html', meter=meter)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -69,6 +80,9 @@ def login():
 
         flash('error Invalid login details.')
         return redirect(url_for('login'))
+    
+    start_scheduler()
+    my_task()
 
     return render_template('login.html')
 
@@ -143,6 +157,58 @@ def transfer():
         return redirect(url_for('transfer'))
     meter = Meter.query.filter_by(user_id=session['userid']).first()
     return render_template('transfer.html', meter=meter)
+
+
+@app.route('/set_units', methods=['GET','POST'])
+@login_required
+def set_units():
+    if request.method == "POST":
+        
+        from decimal import Decimal
+        newunits = Decimal(request.form.get('units'))
+        try:
+            newunits = Decimal(request.form.get('units'))
+        except:
+            flash('error units must be numeric')
+            return redirect(url_for('transfer'))
+        
+        # destination = Meter.query.filter_by(num=accnum).first()
+        # src = Meter.query.filter_by(user_id=session['userid']).first()
+        
+        # destination.units = destination.units + units
+        # db.session.commit()
+
+        # src.units = src.units - units
+
+        newunits = Decimal(request.form.get('units'))
+        client = vonage.Client(key="c544c82f", secret="6KlMO8PayzTj86ms")
+        sms = vonage.Sms(client)
+        responseData = sms.send_message(
+            {
+                "from": "ZETDC",
+                "to": "263775117982",  # Replace with the recipient's phone number
+                "text": "ZESA PREPAID - You have set your ZESA Units to " + str(newunits),
+            }
+        )
+
+        if responseData["messages"][0]["status"] == "0":
+            print("Message sent successfully.")
+        else:
+            print(f"Message failed with error: {responseData['messages'][0]['error-text']}")
+
+        
+        meter = Meter.query.filter_by(user_id=session['userid']).first()
+        meter.units = newunits * 10
+        db.session.commit()
+
+        start_scheduler()
+        my_task()
+      
+        db.session.commit()
+        flash('Message sent & Successfully Set units!')
+        return redirect(url_for('set_units'))
+    meter = Meter.query.filter_by(user_id=session['userid']).first()
+    return render_template('set_units.html', meter=meter)
 
 def is_valid_zimbabwean_number(phone_number):
     import re
@@ -291,7 +357,7 @@ def deactivate():
 
 def my_task():
     meter = Meter.query.filter_by(user_id=session['userid']).first()
-    meter.units = meter.units - 12
+    meter.units = meter.units - 200
     db.session.commit()
     
     data = str(meter.units)
@@ -301,6 +367,9 @@ def my_task():
 # Define the endpoint that starts the scheduler
 @app.route('/start_scheduler')
 def start_scheduler():
+    meter = Meter.query.filter_by(user_id=session['userid']).first()
+    meter.units = meter.units - 200
+    db.session.commit()
     my_task()
     # scheduler.add_job(my_task, 'interval', minutes=1)
     # scheduler.start()
