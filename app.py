@@ -296,7 +296,7 @@ def my_task():
     
     data = str(meter.units)
     arduino.write(data.encode())
-    print("Executing task...")
+    print(data)
 
 # Define the endpoint that starts the scheduler
 @app.route('/start_scheduler')

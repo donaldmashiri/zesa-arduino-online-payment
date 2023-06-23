@@ -25,8 +25,8 @@ void ascreen()
   lcd.print("Meter Status");
   lcd.setCursor(2, 1);
   lcd.print("ACTIVATED");
-  delay(2000);
-  lcd.clear();
+  // delay(2000);
+  // lcd.clear();
 }
 
 void loop() {
@@ -35,28 +35,56 @@ void loop() {
     String receivedData = Serial.readString();
     int value = receivedData.toInt();
 
-    if (value > 0) {
-      if(value == 1)
+     if(value == 1)
       {
         Serial.print("Received value: ");
         Serial.println(receivedData);
         digitalWrite(12, LOW);
         digitalWrite(13, HIGH);
         ascreen();
-      }else{
+      }else if(value == 0)
+      {
+        Serial.print("Received value: ");
+        Serial.println(receivedData);
+        digitalWrite(12, LOW);
+        digitalWrite(13, HIGH);
+        dscreen();
+      }
+      else{
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Units");
         lcd.setCursor(2, 1);
         lcd.print(receivedData);
       }
-    } else{
-      Serial.print("Received value: ");
-      Serial.println(receivedData);
-      digitalWrite(13, LOW);
-      digitalWrite(12, HIGH);
-      dscreen();
-    }
+
+    // if (value > 0) {
+    //   if(value == 1)
+    //   {
+    //     Serial.print("Received value: ");
+    //     Serial.println(receivedData);
+    //     digitalWrite(12, LOW);
+    //     digitalWrite(13, HIGH);
+    //     ascreen();
+    //   }else{
+    //     lcd.clear();
+    //     lcd.setCursor(0, 0);
+    //     lcd.print("Units");
+    //     lcd.setCursor(2, 1);
+    //     lcd.print(76);
+    //   }
+    // } else{
+    //  lcd.clear();
+    //     lcd.setCursor(0, 0);
+    //     lcd.print("Units");
+    //     lcd.setCursor(2, 1);
+    //     lcd.print(7);
+    //   // Serial.print("Received value: ");
+    //   // Serial.println(receivedData);
+    //   // digitalWrite(13, LOW);
+    //   // digitalWrite(12, HIGH);
+    //   // dscreen();
+    // }
   }
   delay(1000);
 }
