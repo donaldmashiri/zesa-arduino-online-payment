@@ -14,8 +14,8 @@ import vonage
 # You can change this to any folder on your system
 ALLOWED_EXTENSIONS = {'jpeg'}
 
-# serial_port = 'COM5'
-# arduino = serial.Serial(serial_port, 9600, timeout=1)
+serial_port = 'COM5'
+arduino = serial.Serial(serial_port, 9600, timeout=1)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ProfessorSecret'
@@ -81,8 +81,7 @@ def login():
         flash('error Invalid login details.')
         return redirect(url_for('login'))
     
-    start_scheduler()
-    my_task()
+    
 
     return render_template('login.html')
 
@@ -154,6 +153,12 @@ def transfer():
         src.units = src.units - units
         db.session.commit()
         flash('Successfully transfered units!')
+
+        start_scheduler()
+        my_task()
+
+
+
         return redirect(url_for('transfer'))
     meter = Meter.query.filter_by(user_id=session['userid']).first()
     return render_template('transfer.html', meter=meter)
@@ -263,40 +268,52 @@ def topup():
 @login_required
 def emergency():
     if request.method == "POST":
-        option = request.form.get('option')
+        option = -200
 
-        if not option:
-            flash('error the option field is empty')
-            return redirect(url_for('emergency'))
+        # if not option:
+        #     flash('error the option field is empty')
+        #     return redirect(url_for('emergency'))
         
+        # meter = Meter.query.filter_by(user_id=session['userid']).first()
+        # if not meter:
+        #     flash('error this account has no meter specified')
+        #     return redirect(url_for('emergency'))
+        
+        # eme = Emergency.query.filter_by(id=option).first()
+        # if not eme:
+        #     flash('error emegency units not found!')
+        #     return redirect(url_for('emergency'))
+
+        # if meter.units > 1:
+        #     flash('error its not an emergency situation yet')
+        #     return redirect(url_for('emergency'))
+        
+        # meter.units = meter.units + 10
+        # meter.balance = meter.balance - 200
+        # db.session.commit()
+
+        # new_log = Log(used_units=0, remaining_units=meter.balance, activity="emegency topup")
+        # db.session.add(new_log)
+        # db.session.commit()
+
         meter = Meter.query.filter_by(user_id=session['userid']).first()
-        if not meter:
-            flash('error this account has no meter specified')
-            return redirect(url_for('emergency'))
-        
-        eme = Emergency.query.filter_by(id=option).first()
-        if not eme:
-            flash('error emegency units not found!')
-            return redirect(url_for('emergency'))
-
-        if meter.units > 1:
-            flash('error its not an emergency situation yet')
-            return redirect(url_for('emergency'))
-        
-        meter.units = meter.units + eme.units
-        meter.balance = meter.balance - eme.price
+        meter.units = 1
         db.session.commit()
 
-        new_log = Log(used_units=0, remaining_units=meter.balance, activity="emegency topup")
-        db.session.add(new_log)
+        start_scheduler()
+        my_task()
+      
         db.session.commit()
-
-        flash('successfully added emergency units')
+        flash('You have requested for emergency Units')
         return redirect(url_for('emergency'))
-        
     meter = Meter.query.filter_by(user_id=session['userid']).first()
-    emes = Emergency.query.all()
-    return render_template('emergency.html', meter=meter, emes=emes)
+    return render_template('emergency.html', meter=meter)
+    
+ 
+        
+    # meter = Meter.query.filter_by(user_id=session['userid']).first()
+    # emes = Emergency.query.all()
+    # return render_template('emergency.html', meter=meter)
 
 
 @app.route('/report', methods=['GET','POST'])
