@@ -14,8 +14,8 @@ import vonage
 # You can change this to any folder on your system
 ALLOWED_EXTENSIONS = {'jpeg'}
 
-serial_port = 'COM5'
-arduino = serial.Serial(serial_port, 9600, timeout=1)
+# serial_port = 'COM5'
+# arduino = serial.Serial(serial_port, 9600, timeout=1)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ProfessorSecret'
